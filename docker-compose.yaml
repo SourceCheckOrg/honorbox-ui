@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  ui:
+    build: .
+    image: monetiza/honorbox-ui
+    container_name: honorbox-ui
+    env_file: 
+      - .env.build
+      
+networks:
+  default:
+    external:
+      name: webproxy

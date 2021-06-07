@@ -1,0 +1,8 @@
+.DS_Store
+.env.development
+.git
+.next
+docker-compose.yaml
+Dockerfile
+Dockerfile_development
+node_modules
