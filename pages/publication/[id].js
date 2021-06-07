@@ -262,7 +262,7 @@ export default function Publication() {
                       </div>
                       <div className="col-span-3 sm:col-span-3">
                         <label htmlFor="royalty-structure" className="block text-sm font-medium text-gray-700">
-                          Royalty Structure
+                          Revenue Share
                         </label>
                         <SelectField
                           options={royaltyStructures}
