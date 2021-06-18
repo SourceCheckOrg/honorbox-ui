@@ -1,11 +1,11 @@
-# Monetiza HonorBox UI
+# SourceCheck HonorBox UI
 
-Frontend App (Web UI) for Monetiza's [HonorBox project](https://github.com/monetiza/honorbox).
+Frontend App (Web UI) for SourceCheck's [HonorBox project](https://github.com/SourceCheckOrg/honorbox).
 
 The application is based on the [Next.js](https://nextjs.org/) framework.
 
 It's necessary to have the backend application (API server) running. More 
-information on that can be found in the [HonorBox API](https://github.com/monetiza/honorbox-api) repository. 
+information on that can be found in the [HonorBox API](https://github.com/SourceCheckOrg/honorbox-api) repository. 
 
 
 ## Development environment setup
@@ -33,12 +33,12 @@ be usable in its place with a little effort.
 
 Clone this repository:
 ```
-$ git clone https://github.com/monetiza/honorbox-ui.git
+$ git clone https://github.com/SourceCheckOrg/honorbox-ui.git
 ```
 
 Install the dependencies
 ```
-$ cd monetiza-ui
+$ cd honorbox-ui
 $ npm install
 ```
 

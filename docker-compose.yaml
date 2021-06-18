@@ -3,7 +3,7 @@ version: '3'
 services:
   ui:
     build: .
-    image: monetiza/honorbox-ui
+    image: sourcecheck/honorbox-ui
     container_name: honorbox-ui
     env_file: 
       - .env.build

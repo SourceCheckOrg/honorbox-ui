@@ -109,7 +109,7 @@ export default function RevenueShare() {
       if (isNew) {
         const newId = savedRoyaltyStructure.id;
         setId(newId);
-        router.push(`/revenue-sharing/${newId}`, undefined, { shallow: true });
+        router.push(`/revenue-share/${newId}`, undefined, { shallow: true });
       }
       setTimeout(() => setSaveSuccess(false), 2000);
     } catch (err) {
