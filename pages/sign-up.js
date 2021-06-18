@@ -32,7 +32,7 @@ export default function SignUp() {
     setLoading(false);
     if (result.statusCode && result.statusCode !== 200) {
       setError(true);
-      setErrorMessage(result.data[0].messages[0].message);
+      setErrorMessage(JSON.stringify(result.message));
     } else {
       setSuccess(true);
     }
