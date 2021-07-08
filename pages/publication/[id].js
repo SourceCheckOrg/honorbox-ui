@@ -4,7 +4,6 @@ import useSWR, { mutate } from "swr";
 import PulseLoader from "react-spinners/PulseLoader";
 import { useAuth } from "../../context/auth";
 import api from "../../lib/api";
-import socket from "../../lib/socket";
 import Protected from "../../components/Protected";
 import Layout from "../../components/AppLayout";
 import Button from "../../components/Button";
@@ -17,8 +16,6 @@ const PREVIEW_HOST = process.env.NEXT_PUBLIC_PREVIEW_HOST
 const PUBLICATION_PATH = process.env.NEXT_PUBLIC_PUBLICATION_PATH;
 const PUBLISHER_PATH=process.env.NEXT_PUBLIC_PUBLISHER_PATH
 const ROYALTY_STRUCTURE_PATH = process.env.NEXT_PUBLIC_ROYALTY_STRUCTURE_PATH;
-const PUBLISHER_VC_PATH = process.env.NEXT_PUBLIC_PUBLISHER_VC_PATH;
-const PUBLISHER_VP_PATH = process.env.NEXT_PUBLIC_PUBLISHER_VP_PATH;
 
 export default function Publication() {
   // Data fetching
@@ -39,29 +36,19 @@ export default function Publication() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [royalty_structure, setRoyaltyStructure] = useState(null);
-  const [publisher_vc_issued, setPublisherVCIssued] = useState(null);
-  const [publisher_vp, setPublisherVP] = useState(null);
+  const [embedded, setEmbedded] = useState(false);
   const [published, setPublished] = useState(null);
 
   // UI state
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(false);
-  const [publisherCredentialOffer, setPublisherCredentialOffer] = useState(false);
-  const [publisherPresentationRequest, setPublisherPresentationRequest] = useState(false);
+  const [embedding, setEmbedding] = useState(false);
+  const [embedSuccess, setEmbedSuccess] = useState(false);
+  const [embedError, setEmbedError] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
   const [publishError, setPublishError] = useState(false);
-
-  // Create socket on component mount
-  useEffect(() => {
-    socket.initiate(API_HOST);
-    
-    // Disconnect from socket when component unmounts
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
 
   // Update Publication state on data fetch
   useEffect(() => {
@@ -78,8 +65,9 @@ export default function Publication() {
           size: publication.pdf_raw.size,
         });
       }
-      setPublisherVCIssued(publication.publisher_vc_issued);
-      setPublisherVP(publication.publisher_vp);
+      if (publication.pdf_embedded) {
+        setEmbedded(true);
+      }
       setPublished(publication.published);
     }
   }, [publication]);
@@ -145,40 +133,20 @@ export default function Publication() {
     }
   }
 
-  // Handle Publisher Verifiable Credential offer
-  function onPublisherCredOffer() {
-    if (!uuid) return;
-    socket.emit("publisher-cred-offer-sub", uuid);
-    socket.on("publisher-cred-offer-done", () => {
-      socket.emit("publisher-cred-offer-unsub", uuid);
-      setPublisherCredentialOffer(false);
+  // // Handle embedding of QR code
+  async function onEmbed() {
+    setEmbedding(true);
+    try {
+      const response = await api.request({ method: 'PUT', url: `${PUBLICATION_PATH}/embed/${id}`, data: {} });
       mutate(`${PUBLICATION_PATH}/${id}`);
-    });
-    setPublisherCredentialOffer(true);
-  }
-
-  // Handle cancellation of Publisher Verifiable Credential offer
-  function onPublisherCredOfferCancel() {
-    socket.emit("publisher-cred-offer-unsub", uuid);
-    setPublisherCredentialOffer(false);
-  }
-
-  // Handle Publisher Verifiable Presentation request
-  function onPublisherPresReq() {
-    if (!uuid) return;
-    socket.emit("publisher-pres-req-sub", uuid);
-    socket.on("publisher-pres-req-done", () => {
-      socket.emit("publisher-pres-req-unsub", uuid);
-      setPublisherPresentationRequest(false);
-      mutate(`${PUBLICATION_PATH}/${id}`);
-    });
-    setPublisherPresentationRequest(true);
-  }
-
-  // Handle cancellation of Publisher Verifiable Presentation request
-  function onPublisherPresReqCancel() {
-    socket.emit("publisher-pres-req-unsub", uuid);
-    setPublisherPresentationRequest(false);
+      setEmbedding(false);
+      setEmbedSuccess(true);
+      setTimeout(() => setEmbedSuccess(false), 2000);
+    } catch (err) {
+      setEmbedding(false);
+      setEmbedError(true);
+      setTimeout(() => setEmbedError(false), 2000);
+    }
   }
 
   // Handle publication of Publication
@@ -197,9 +165,16 @@ export default function Publication() {
     }
   }
 
+  function hasAccount(royaltyStructureId) {
+    if (!royaltyStructureId) return false;
+    if (!royaltyStructures) return false;
+    return !!royaltyStructures.filter(rs => rs.id == royaltyStructureId)[0].account;
+  }
+
   return (
     <Protected>
       <Layout>
+        {/*
         <QrCodeModal
           show={publisherCredentialOffer}
           title="Get Publisher Credential"
@@ -207,6 +182,7 @@ export default function Publication() {
           url={`${API_HOST}${PUBLISHER_VC_PATH}?uuid=${uuid}`}
           onCancel={onPublisherCredOfferCancel}
         />
+        -->
         <QrCodeModal
           show={publisherPresentationRequest}
           title="Share Publisher Credential"
@@ -214,6 +190,7 @@ export default function Publication() {
           url={`${API_HOST}${PUBLISHER_VP_PATH}?uuid=${uuid}`}
           onCancel={onPublisherPresReqCancel}
         />
+        */}
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none" tabIndex="0">
           <div className="py-6">
             <div className="max-w-7xl mx-auto mb-4 px-4 sm:px-6 lg:px-8">
@@ -233,7 +210,7 @@ export default function Publication() {
               <div id="new-publication-form" className="mt-5 md:mt-0 md:col-span-2">
                 <form onSubmit={onSubmit}>
                   <div className="shadow sm:rounded-md sm:overflow-hidden">
-                    <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
+                    <div className="px-4 py-5 bg-white space-y-3 sm:p-6">
                       <div className="col-span-6 sm:col-span-4">
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                           Title
@@ -258,18 +235,6 @@ export default function Publication() {
                           onChange={(evt) => setSlug(evt.target.value)}
                           required
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                        />
-                      </div>
-                      <div className="col-span-3 sm:col-span-3">
-                        <label htmlFor="royalty-structure" className="block text-sm font-medium text-gray-700">
-                          Revenue Share
-                        </label>
-                        <SelectField
-                          options={royaltyStructures}
-                          valueField="id"
-                          labelField="name"
-                          selected={royalty_structure ? royalty_structure : null}
-                          onChange={(value) => setRoyaltyStructure(value)}
                         />
                       </div>
                       <div>
@@ -298,10 +263,7 @@ export default function Publication() {
                                   {pdfRawData.name} ({pdfRawData.size})
                                 </p>
                                 <div className="flex justify-center font-medium text-sm text-indigo-600">
-                                  <label
-                                    htmlFor="raw_pdf"
-                                    className="cursor-pointer rounded-md hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                                  >
+                                  <label htmlFor="raw_pdf" className="cursor-pointer rounded-md hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                     <span>Replace</span>
                                     <input
                                       id="raw_pdf"
@@ -311,22 +273,13 @@ export default function Publication() {
                                       onChange={onFileUpload}
                                     />
                                   </label>
-                                  <span className="pl-1 hover:text-indigo-500">
-                                    {" "}
-                                    /{" "}
-                                    <button onClick={onFileRemove}>
-                                      Remove
-                                    </button>
-                                  </span>
+                                  <span className="pl-1 hover:text-indigo-500">{" "} /{" "} <button onClick={onFileRemove}>Remove</button></span>
                                 </div>
                               </>
                             ) : (
                               <>
                                 <div className="flex text-sm text-gray-600">
-                                  <label
-                                    htmlFor="raw_pdf"
-                                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                                  >
+                                  <label htmlFor="raw_pdf" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                     <span>Upload a file</span>
                                     <input
                                       id="raw_pdf"
@@ -338,25 +291,43 @@ export default function Publication() {
                                   </label>
                                   <p className="pl-1">or drag and drop</p>
                                 </div>
-                                <p className="text-xs text-gray-500">
-                                  PDF up to 30MB
-                                </p>
+                                <p className="text-xs text-gray-500">PDF up to 30MB</p>
                               </>
                             )}
                           </div>
                         </div>
                       </div>
+                      <div className="col-span-3 sm:col-span-3">
+                        <label htmlFor="royalty-structure" className="block text-sm font-medium text-gray-700">
+                          Revenue Share
+                        </label>
+                        <div className="flex items-center">
+                          <div className="flex-grow mr-5">
+                            <SelectField
+                              options={royaltyStructures}
+                              valueField="id"
+                              labelField="name"
+                              selected={royalty_structure ? royalty_structure : null}
+                              onChange={(value) => setRoyaltyStructure(value)}
+                            />
+                          </div>
+                          <div className="mr-5">
+                            <label className="inline-block mr-3" htmlFor="embedded">QR Code Embedded </label>
+                            <input type="checkbox" checked={embedded} disabled></input>
+                          </div>
+                          <div className="flex-none">
+                          { embedding ? (
+                              <div className="inline-block text-center py-2 px-2 border border-transparent shadow-sm rounded-md h-10 w-20 bg-indigo-600 hover:bg-indigo-700">
+                                <PulseLoader  color="white" loading={embedding} size={9}/>
+                              </div>
+                            ) : (
+                              <Button label="Embed" color="indigo" disabled={embedded || !hasAccount(royalty_structure)} onClick={onEmbed} />
+                            )
+                          }
+                          </div>
+                        </div>
+                      </div>
                       <div>
-                        <Button label="Get Publisher Credential" color="indigo" disabled={!pdf_raw_hash || publisher_vc_issued} onClick={onPublisherCredOffer} />
-                        <Button label="Share Publisher Credential" color="indigo" disabled={!publisher_vc_issued || publisher_vp } onClick={onPublisherPresReq} />
-                        { publishing ? (
-                            <div className="inline-block text-center py-2 px-2 border border-transparent shadow-sm rounded-md h-10 w-20 bg-indigo-600 hover:bg-indigo-700">
-                              <PulseLoader  color="white" loading={publishing} size={9}/>
-                            </div>
-                          ) : (
-                            <Button label="Publish" color="indigo" disabled={!publisher_vp || published} onClick={onPublish} />
-                          )
-                        }
                       </div>
                       { published && publisher && publisher.slug ? (
                           <div>
@@ -367,7 +338,6 @@ export default function Publication() {
                           ''
                         )
                       }
-                        
                     </div>
                     <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                       {saving ? (
@@ -378,7 +348,8 @@ export default function Publication() {
                           <button type="submit" className="h-10 w-20 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Save
                           </button>
-                      )}
+                        )
+                      }
                     </div>
                   </div>
                 </form>
