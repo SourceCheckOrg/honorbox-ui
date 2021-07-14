@@ -67,14 +67,14 @@ export default function Profile() {
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none" tabIndex="0">
           <div className="py-6">
             <div className="max-w-7xl mx-auto mb-4 px-4 sm:px-6 md:px-8">
-              <h1 className="text-2xl font-semibold text-gray-900">User</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">Your account information</h1>
             </div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <div className="mt-5 md:mt-0 md:col-span-2">
                 <div className="shadow sm:rounded-md sm:overflow-hidden">
                   <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
                     <div className="col-span-6 sm:col-span-4">
-                      <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+                      <label htmlFor="Username (for internal reference only)" className="block text-sm font-medium text-gray-700">Username</label>
                       <input 
                         type="text" 
                         name="username" 
@@ -84,7 +84,7 @@ export default function Profile() {
                       />
                     </div>
                     <div className="col-span-6 sm:col-span-4">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                      <label htmlFor="Verified Email Address" className="block text-sm font-medium text-gray-700">Email</label>
                       <input
                         type="text" 
                         name="email" 
@@ -94,7 +94,7 @@ export default function Profile() {
                       />
                     </div>
                     <div className="col-span-6 sm:col-span-4">
-                      <label htmlFor="did" className="block text-sm font-medium text-gray-700">DID</label>
+                      <label htmlFor="Wallet ID (aka 'DID')" className="block text-sm font-medium text-gray-700">DID</label>
                       <input 
                         type="text" 
                         name="did" 
@@ -108,17 +108,17 @@ export default function Profile() {
               </div>
             </div>
             <div className="max-w-7xl mx-auto mb-4 mt-6 px-4 sm:px-6 md:px-8">
-              <h1 className="text-2xl font-semibold text-gray-900">Publisher</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">Public-facing Publisher Information</h1>
             </div>
-            <NotificationPanel show={saveSuccess} bgColor="bg-green-100" message="Publisher data updated!" />
-            <NotificationPanel show={saveError} bgColor="bg-red-100" message="Error updating Publisher data!" />
+            <NotificationPanel show={saveSuccess} bgColor="bg-green-100" message="Publisher information updated!" />
+            <NotificationPanel show={saveError} bgColor="bg-red-100" message="Error updating publisher information!" />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <div className="mt-5 md:mt-0 md:col-span-2">
                 <form onSubmit={onSubmit}>
                   <div className="shadow sm:rounded-md sm:overflow-hidden">
                     <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
                       <div className="col-span-6 sm:col-span-4">
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                        <label htmlFor="Publisher Username (Public-facing)" className="block text-sm font-medium text-gray-700">Name</label>
                         <input 
                           type="text" 
                           name="name" 
@@ -129,7 +129,7 @@ export default function Profile() {
                         />
                       </div>
                       <div className="col-span-6 sm:col-span-4">
-                        <label htmlFor="slug" className="block text-sm font-medium text-gray-700">Slug</label>
+                        <label htmlFor="Root directory for permanent, public URLs (aka 'slug')" className="block text-sm font-medium text-gray-700">Slug</label>
                         <input 
                           type="text" 
                           name="slug" 
