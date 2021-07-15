@@ -79,7 +79,18 @@ export default function RevenueSharings() {
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none" tabIndex="0">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 pb-6 sm:px-8 flex" >
-              <div className="flex-1"><h1 className="text-2xl font-semibold text-gray-900">Revenue Shares</h1></div>
+              <div className="flex-1">
+                  <h1 className="text-2xl font-semibold text-gray-900">Revenue Shares</h1>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Here, you can define revenue-sharing commitments that can be used to create
+                    unique cryptocurrency donation addresses that contain a smart-contract for 
+                    splitting received funds. These commitments can be signed by the publisher
+                    and embedded in SourceCheck publications for both human-readable and 
+                    machine-readable transparency. A revenue-sharing scheme has to be defined here,
+                    including addresses for each recipient, before a publication-specific 
+                    smart contract can be launched on a public payments-enabled blockchain.
+                  </p>
+                  </div>
               <div>
                 <Link href="/revenue-share/new">
                   <button type="button"className="relative inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500" >

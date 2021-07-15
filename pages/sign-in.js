@@ -56,7 +56,13 @@ export default function SignIn() {
             <div className="md:col-span-1 px-3">
               <div className="px-4 sm:px-0">
                 <h3 className="text-xl font-medium leading-6 text-gray-900">Sign In</h3>
-                <p className="mt-1 text-sm text-gray-600">Please scan the QR code using your credible Wallet to Sign In</p>
+                <p className="mt-1 text-sm text-gray-600">
+                    Please scan the QR code using your verified Credible wallet 
+                    to sign in to your account securely and authenticate yourself.</p>
+                <p className="mt-1 text-sm text-gray-600">
+                    Note: we require this extra step to ensure each session with our system
+                    has a fresh signature from the wallet that contains and controls
+                    the verification token you received at sign-up.</p>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2 px-7" >

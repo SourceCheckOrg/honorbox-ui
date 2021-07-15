@@ -5,6 +5,7 @@ import NavBar from '../components/NavBar';
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
 const SIGNUP_PATH = process.env.NEXT_PUBLIC_SIGNUP_PATH;
 const SIGNUP_URL = `${API_HOST}${SIGNUP_PATH}`;
+const contactlink = "<a href=mailto:juanATsourcecheckDOTorg>contact us</a>"
 
 export default function SignUp() {
 
@@ -48,7 +49,7 @@ export default function SignUp() {
               <div className="md:col-span-1 px-3">
                 <div className="px-4 sm:px-0">
                   <h3 className="text-lg font-medium leading-6 text-gray-900">Sign Up</h3>
-                  <p className="mt-1 text-sm text-gray-600">We have sent you an email message containing instructions to activate your account!</p>
+                  <p className="mt-1 text-sm text-gray-600">We have sent you an email message containing instructions to activate your account! If you don't see it for 5min, check your email spam filter. It will contain a unique URL to confirm your email, which takes you to a QR code to scan with your SSI mobile wallet, which will handle electronic signatures securely and confidentially.</p>
                 </div>
               </div>
             </div>
@@ -68,7 +69,7 @@ export default function SignUp() {
               <div className="md:col-span-1 px-3">
                 <div className="px-4 sm:px-0">
                   <h3 className="text-lg font-medium leading-6 text-gray-900">Sign Up</h3>
-                  <p className="mt-1 text-sm text-gray-600">There was a problem processing your request: {errorMessage}</p>
+                  <p className="mt-1 text-sm text-gray-600">There was a problem processing your request: {errorMessage}. Feel free to {contactlink} for help.</p>
                 </div>
               </div>
             </div>
@@ -87,7 +88,8 @@ export default function SignUp() {
             <div className="md:col-span-1 px-3">
               <div className="px-4 sm:px-0">
                 <h3 className="text-lg font-medium leading-6 text-gray-900">Sign Up instructions</h3>
-                <p className="mt-1 text-sm text-gray-600">We are going to send you an email message with information on how to continue</p>
+                <p className="mt-1 text-sm text-gray-600">We are going to send you an email message with information on how to continue. It will contain a link to a QR code you will need to scan with Credible or another W3C-conformant SSI mobile wallet that uses the same QR/VP method.</p>
+                <p className="mt-1 text-sm text-gray-600">Please check your email spam filter if you do not see an email within 5 minutes.</p>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2">
