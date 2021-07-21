@@ -46,6 +46,11 @@ export default function SignUp() {
           <div className="md:col-span-1 text-gray-600 text-l">
             <h1 className="text-2xl text-gray-900">Sign Up</h1>
             <p className="pt-5">We have sent you an email message containing instructions to activate your account!</p>
+            <p className="pt-5">
+              If you don't see it for 5min, check your email spam filter. 
+              It will contain a unique URL to confirm your email, which takes you to a QR code to scan with your 
+              SSI mobile wallet, which will handle electronic signatures securely and confidentially.
+            </p>
           </div>
         </div>
       </>
