@@ -50,25 +50,27 @@ export default function SignIn() {
   return (
     <>
       <NavBar />
-      <div className="max-w-7xl px-5 mt-5 mx-auto">
-      <div className="mt-10 sm:mt-0">
-          <div className="md:grid md:grid-cols-3 md:gap-6">
-            <div className="md:col-span-1 px-3">
-              <div className="px-4 sm:px-0">
-                <h3 className="text-xl font-medium leading-6 text-gray-900">Sign In</h3>
-                <p className="mt-1 text-sm text-gray-600">Please scan the QR code using your credible Wallet to Sign In</p>
-              </div>
-            </div>
-            <div className="mt-5 md:mt-0 md:col-span-2 px-7" >
-              <QRCode
-                id={challenge}
-                value={url}
-                size={200}
-                level={"H"}
-                includeMargin={false}
-              />
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto md:grid md:grid-cols-3 md:gap-6 p-5 md:px-10">
+        <div className="md:col-span-1 text-gray-600 text-l">
+          <h1 className="text-2xl text-gray-900">Sign In</h1>
+          <p className="pt-5">
+            Please scan the QR code using your verified Credible wallet 
+            to sign in to your account securely and authenticate yourself.
+          </p>
+          <p className="pt-5">
+            Note: we require this extra step to ensure each session with our system
+            has a fresh signature from the wallet that contains and controls
+            the verification token you received at sign-up.
+          </p>
+        </div>
+        <div className="md:col-span-2 pt-10 md:pt-14 md:pl-10" >
+          <QRCode
+            id={challenge}
+            value={url}
+            size={200}
+            level={"H"}
+            includeMargin={false}
+          />
         </div>
       </div>
     </>

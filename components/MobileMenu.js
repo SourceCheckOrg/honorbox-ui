@@ -69,7 +69,9 @@ export default function MobileMenu({ items, menuOpened, setMenuOpened }) {
               </div>
               <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
                 <div className="flex-shrink-0 flex items-center px-4">
-                  <span className="text-white text-2xl font-thin widest">HonorBox</span>
+                  <Link href="/">
+                    <a className="text-white text-2xl font-thin widest">HonorBox</a>
+                  </Link>
                 </div>
                 <nav className="mt-5 px-2 space-y-1">
                   { renderItems(items, router.pathname) }

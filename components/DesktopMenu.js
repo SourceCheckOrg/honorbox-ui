@@ -39,7 +39,9 @@ export default function DesktopMenu({ items }) {
         <div className="flex flex-col h-0 flex-1 bg-gray-800">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4">
-              <span className="text-white text-2xl font-thin widest">HonorBox</span>
+              <Link href="/">
+                <a className="text-white text-2xl font-thin widest">HonorBox</a>
+              </Link>
             </div>
             <nav className="mt-5 flex-1 px-2 bg-gray-800 space-y-1">
               { renderItems(items, router.pathname) }

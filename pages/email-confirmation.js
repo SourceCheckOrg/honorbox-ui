@@ -54,25 +54,26 @@ export default function EmailConfirmation() {
   return (
     <>
       <NavBar />
-      <div className="max-w-7xl px-5 mt-5 mx-auto">
-      <div className="mt-10 sm:mt-0">
-          <div className="md:grid md:grid-cols-3 md:gap-6">
-            <div className="md:col-span-1 px-3">
-              <div className="px-4 sm:px-0">
-                <h3 className="text-xl font-medium leading-6 text-gray-900">Email confirmation</h3>
-                <p className="mt-1 text-sm text-gray-600">Please scan the QR code using your credible Wallet to finish Sign Up</p>
-              </div>
-            </div>
-            <div className="mt-5 md:mt-0 md:col-span-2 px-7" >
-              <QRCode
-                id={confirmation}
-                value={url}
-                size={200}
-                level={'H'}
-                includeMargin={false}
-              />
-            </div>
+      <div className="max-w-7xl mx-auto md:grid md:grid-cols-3 md:gap-6 p-5 md:px-10">
+        <div className="md:col-span-1">
+          <div className="text-gray-600 text-l">
+            <h1 className="text-2xl text-gray-900">Email confirmation</h1>
+            <p className="pt-5">
+              Please scan the QR code using your Credible Wallet to associate your 
+              verified email address with a unique signing key controlled exclusively 
+              and confidentially on your mobile device. A unique token will be stored in
+              your wallet associated with this account.
+            </p>
           </div>
+        </div>
+        <div className="md:col-span-2 pt-10 md:pt-14 md:pl-10" >
+          <QRCode
+            id={confirmation}
+            value={url}
+            size={200}
+            level={'H'}
+            includeMargin={false}
+          />
         </div>
       </div>
     </>

@@ -78,7 +78,7 @@ export default function Publications() {
         />
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none" tabIndex="0">
           <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 pb-6 sm:px-8 flex" >
+            <div className="max-w-7xl mx-auto px-4 sm:px-8 flex" >
               <div className="flex-1"><h1 className="text-2xl font-semibold text-gray-900">Publications</h1></div>
               <div>
                 <Link href="/publication/new">
@@ -87,6 +87,18 @@ export default function Publications() {
                   </button>
                 </Link>
               </div>
+            </div>
+            <div className="max-w-7xl mx-auto px-4 p-6 sm:px-8 text-l text-gray-600">
+              Here, you can create unique cryptocurrency donation addresses for each publication
+              you chose to package/repackage with SourceCheck. These addresses contain a 
+              smart-contract for splitting received funds according to a sharing scheme
+              defined on the 'Revenue Shares' page. These commitments can be signed by the 
+              publisher and attached to SourceCheck publications in human-readable form and/or
+              embedded invisibly in machine-readable form. Once a publication-specific 
+              smart contract exists, a QR code and link to facilitate easy direct donations
+              can be added to the PDF (this is the human-readable option), and/or a W3C
+              verifiable credential can be embedded invisibly in the PDF (this is the 
+              machine-readable option).
             </div>
             <NotificationPanel show={!!fetchError} bgColor="bg-red-100" message="Error fetching Publications! Please try to reload the app!"/>
             <NotificationPanel show={deleteError} bgColor="bg-red-100" message="Error deleting Publication!"/>
