@@ -67,9 +67,9 @@ export default function RevenueSharings() {
 
   return (
     <>
-      <NotificationPanel show={!!fetchError} bgColor="bg-red-300" message="Error fetching Revenue Sharings! Please try to reload the app!"/>
-      <NotificationPanel show={deleteError} bgColor="bg-red-300" message="Error deleting Revenue Sharing!"/>
-      <NotificationPanel show={deleteSuccess} bgColor="bg-green-300" message="Revenue Sharing successfully deleted!"/>
+      <NotificationPanel show={!!fetchError} bgColor="bg-red-400" message="Error fetching Revenue Sharings! Please try to reload the app!"/>
+      <NotificationPanel show={deleteError} bgColor="bg-red-400" message="Error deleting Revenue Sharing!"/>
+      <NotificationPanel show={deleteSuccess} bgColor="bg-green-400" message="Revenue Sharing successfully deleted!"/>
       <Protected>
         <Layout>
           <Modal 
@@ -84,11 +84,7 @@ export default function RevenueSharings() {
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 pb-6 sm:px-8 flex" >
                 <div className="flex-1"><h1 className="text-2xl font-semibold text-gray-900">Revenue Shares</h1></div>
-                <div>
-                  
-                </div>
               </div>
-              
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <div className="flex flex-col">
                   <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -97,11 +93,11 @@ export default function RevenueSharings() {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shared Account</th>
-                              <th scope="col" className="relative px-6 py-3">
+                              <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                              <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shared Account</th>
+                              <th scope="col" className="px-2 py-2 text-right">
                                 <Link href="/revenue-share/new">
-                                  <button type="button"className="relative inline-flex items-center px-2 py-1 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500" >
+                                  <button type="button" className="inline-flex items-center px-2 py-1 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500" >
                                     <span>New</span>
                                   </button>
                                 </Link>

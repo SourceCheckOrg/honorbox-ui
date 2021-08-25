@@ -40,12 +40,10 @@ export default function Profile() {
   async function onSubmit (e) {
     e.preventDefault()
     setSaving(true);
-
     const isNew = !id;
     const method = isNew ? 'POST' : 'PUT';
     const url = isNew ? PUBLISHER_PATH : `${PUBLISHER_PATH}/${id}`;
     const data = { id, name, slug }
-
     try {
       const response = await api.request({ method, url, data });
       const savedPublisher = response.data;
@@ -103,7 +101,6 @@ export default function Profile() {
               <div className="max-w-7xl mx-auto mb-4 mt-6 px-4 sm:px-6 md:px-8">
                 <h1 className="text-2xl font-semibold text-gray-900">Publisher</h1>
               </div>
-
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <div className="mt-5 md:mt-0 md:col-span-2">
                   <form onSubmit={onSubmit}>

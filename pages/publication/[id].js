@@ -12,9 +12,7 @@ import QrCodeModal from "../../components/QrCodeModal";
 import SelectField from "../../components/SelectField";
 
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
-const PREVIEW_HOST = process.env.NEXT_PUBLIC_PREVIEW_HOST
 const PUBLICATION_PATH = process.env.NEXT_PUBLIC_PUBLICATION_PATH;
-const PUBLISHER_PATH=process.env.NEXT_PUBLIC_PUBLISHER_PATH
 const ROYALTY_STRUCTURE_PATH = process.env.NEXT_PUBLIC_ROYALTY_STRUCTURE_PATH;
 
 export default function Publication() {
@@ -25,7 +23,6 @@ export default function Publication() {
   const shouldFetchPublication = isReady && pathId && pathId !== "new";
   const { data: royaltyStructures, error: rsError } = useSWR(isReady ? ROYALTY_STRUCTURE_PATH : null);
   const { data: publication, error: pubError } = useSWR(shouldFetchPublication ? `${PUBLICATION_PATH}/${pathId}` : null);
-  const { data: publisher, error: fetchError } = useSWR(isReady ? PUBLISHER_PATH : null);
 
   // Publication state
   const [id, setId] = useState();
@@ -36,18 +33,13 @@ export default function Publication() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [royalty_structure, setRoyaltyStructure] = useState(null);
-  const [embedded, setEmbedded] = useState(false);
-  const [published, setPublished] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState(null);
 
   // UI state
   const [saving, setSaving] = useState(false);
   const [embedding, setEmbedding] = useState(false);
-  const [publishing, setPublishing] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
- 
-  const [embedSuccess, setEmbedSuccess] = useState(false);
-  const [embedError, setEmbedError] = useState(false);
   
   // Update Publication state on data fetch
   useEffect(() => {
@@ -65,9 +57,10 @@ export default function Publication() {
         });
       }
       if (publication.pdf_embedded) {
-        setEmbedded(true);
+        setDownloadUrl(publication.pdf_embedded.url)
+      } else {
+        setDownloadUrl(null);
       }
-      setPublished(publication.published);
     }
   }, [publication]);
 
@@ -120,9 +113,8 @@ export default function Publication() {
       setSaving(false);
       setSuccessMsg('Publication Saved!')
       if (isNew) {
-        const newId = savedPublication.id;
-        setId(newId);
-        router.push(`/publication/${newId}`, undefined, { shallow: true });
+        setId(savedPublication.id);
+        router.push(`/publication/${savedPublication.id}`, undefined, { shallow: true });
       }
       setTimeout(() => setSuccessMsg(null), 3000);
       mutate(`${PUBLICATION_PATH}/${id}`);
@@ -139,28 +131,12 @@ export default function Publication() {
       const response = await api.request({ method: 'PUT', url: `${PUBLICATION_PATH}/embed/${id}`, data: {} });
       mutate(`${PUBLICATION_PATH}/${id}`);
       setEmbedding(false);
-      setEmbedSuccess(true);
-      setTimeout(() => setEmbedSuccess(false), 3000);
-    } catch (err) {
-      setEmbedding(false);
-      setEmbedError(true);
-      setTimeout(() => setEmbedError(false), 3000);
-    }
-  }
-
-  // Handle publication of Publication
-  async function onPublish() {
-    setPublishing(true);
-    try {
-      const response = await api.request({ method: 'PUT', url: `${PUBLICATION_PATH}/publish/${id}`, data: {} });
-      mutate(`${PUBLICATION_PATH}/${id}`);
-      setPublishing(false);
-      setSuccessMsg('Publication Published!')
+      setSuccessMsg('QR Code embedded successfully!')
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err) {
-      setPublishing(false);
-      setErrorMsg('Error publishing Publication!')
-      setTimeout(() => setPublishError(false), 3000);
+      setEmbedding(false);
+      setErrorMsg('Error embedding QR code!')
+      setTimeout(() => setErrorMsg(null), 3000);
     }
   }
 
@@ -198,7 +174,6 @@ export default function Publication() {
             <div className="max-w-7xl mx-auto mb-4 px-4 sm:px-6 lg:px-8">
               <h1 className="text-2xl font-semibold text-gray-900">Publication</h1>
             </div>
-            
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <div id="new-publication-form" className="mt-5 md:mt-0 md:col-span-2">
                 <form onSubmit={onSubmit}>
@@ -300,7 +275,7 @@ export default function Publication() {
                           </div>
                           <div className="mr-5">
                             <label className="inline-block mr-3" htmlFor="embedded">QR Code Embedded </label>
-                            <input type="checkbox" checked={embedded} disabled></input>
+                            <input type="checkbox" checked={downloadUrl} disabled></input>
                           </div>
                           <div className="flex-none">
                           { embedding ? (
@@ -308,7 +283,7 @@ export default function Publication() {
                                 <PulseLoader  color="white" loading={embedding} size={9}/>
                               </div>
                             ) : (
-                              <Button label="Embed" color="indigo" disabled={embedded || !hasAccount(royalty_structure)} onClick={onEmbed} />
+                              <Button label="Embed" color="indigo" disabled={downloadUrl || !hasAccount(royalty_structure) || !pdf_raw_hash} onClick={onEmbed} />
                             )
                           }
                           </div>
@@ -316,10 +291,10 @@ export default function Publication() {
                       </div>
                       <div>
                       </div>
-                      { published && publisher && publisher.slug ? (
+                      { downloadUrl ? (
                           <div>
-                            <label className="inline-block mr-2 text-sm font-medium text-gray-700">Preview URL: </label>
-                            <a className="text-sm font-medium text-indigo-700" href={`${PREVIEW_HOST}/${publisher.slug}/${slug}`}>{`${PREVIEW_HOST}/${publisher.slug}/${slug}`}</a>
+                            <label className="inline-block mr-2 text-sm font-medium text-gray-700">Download URL: </label>
+                            <a className="text-sm font-medium text-indigo-700" target="_blank" href={`${API_HOST}${downloadUrl}`}>{`${API_HOST}${downloadUrl}/${slug}`}</a>
                           </div>
                         ) : (
                           ''
