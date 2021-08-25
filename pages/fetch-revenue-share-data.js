@@ -5,8 +5,8 @@ import Layout from '../components/AppLayout';
 import NotificationPanel from '../components/NotificationPanel';
 
 // TODO remove test data
-const stateAcctStr = 'BoNhzUP4d8qVcwFstjeMYDGrvR95nNBnqgoVQwkPPUDH';
-const sharedAcctStr = 'DvwGfe3g96vgzgDEwkL9LmKX97AAkossrcJLdS9N4TxP'
+const sharedAcctStr = 'sqUEsnEZtf1VaWLfVTjuyYUzuFL3n4ppMvZHepW792n'
+const stateAcctStr = 'CwHUNoXLxYDe4BmfAA6DY6fdkpMb3PsvKWZewJAjRjMD';
 
 export default function Profile() {
 
@@ -15,17 +15,62 @@ export default function Profile() {
   const [sharedAcct, setSharedAcct] = useState(sharedAcctStr); // TODO remove test data
   const [sharedAcctBalance, setSharedAcctBalance] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
-  const [member1Acct, setMember1Acct] = useState('');
-  const [member2Acct, setMember2Acct] = useState('');
-  const [member1Shares, setMember1Shares] = useState('');
-  const [member2Shares, setMember2Shares] = useState('');
-  const [member1Withdraw, setMember1Withdraw] = useState('');
-  const [member2Withdraw, setMember2Withdraw] = useState('');
+  const [memberAccts, setMemberAccts] = useState([]);
+  const [memberShares, setMemberShares] = useState([]);
+  const [memberWithdraws, setMemberWithdraws] = useState([]);
 
   // UI state
   const [fetching, setFetching] = useState(false);
   const [fetchSuccess, setFetchSuccess] = useState(false);
   const [fetchError, setFetchError] = useState(false);
+
+  function renderMemberAccts() {
+    return memberAccts.map((memberAcct, idx) => {
+      return (
+        <div className="col-span-6 sm:col-span-4">
+          <label htmlFor="member1Acct" className="block text-sm font-medium text-gray-700">Member {idx + 1} Account</label>
+          <input
+            type="text" 
+            value={memberAcct}
+            disabled
+            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
+          />
+        </div>
+      );
+    });
+  }
+
+  function renderMemberShares() {
+    return memberShares.map((memberShare, idx) => {
+      return (
+        <div className="col-span-6 sm:col-span-4">
+          <label htmlFor="member2Shares" className="block text-sm font-medium text-gray-700">Member {idx + 1} Shares</label>
+          <input
+            type="text" 
+            value={memberShare + '%'}
+            disabled
+            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
+          />
+        </div>
+      );
+    });
+  }
+
+  function renderMemberWithdraws() {
+    return memberWithdraws.map((memberWithdraw, idx) => {
+      return (
+        <div className="col-span-6 sm:col-span-4">
+          <label htmlFor="member1WithDraw" className="block text-sm font-medium text-gray-700">Member {idx + 1} Withdraw</label>
+          <input
+            type="text" 
+            value={memberWithdraw}
+            disabled
+            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
+          />
+        </div>
+      );
+    });
+  }
 
   async function onSubmit (e) {
     e.preventDefault()
@@ -33,19 +78,12 @@ export default function Profile() {
 
     try {
       const stateAcctInfo = await fetchRevenueShareData(stateAcct, sharedAcct);
-      let { isInitialized, member1Acct, member2Acct, member1Shares, member2Shares, member1Withdraw, member2Withdraw, sharedAcctBalance } = stateAcctInfo;
-      member1Withdraw = parseFloat(member1Withdraw);
-      member2Withdraw = parseFloat(member2Withdraw);
-
+      let { sharedAcctBalance, isInitialized, memberAccts, memberShares, memberWithdraws } = stateAcctInfo;
       setSharedAcctBalance(sharedAcctBalance);
       setIsInitialized(isInitialized);
-      setMember1Acct(member1Acct);
-      setMember2Acct(member2Acct);
-      setMember1Shares(member1Shares);
-      setMember2Shares(member2Shares);
-      setMember1Withdraw(member1Withdraw);
-      setMember2Withdraw(member2Withdraw);
-
+      setMemberAccts(memberAccts);
+      setMemberShares(memberShares);
+      setMemberWithdraws(memberWithdraws)
       setFetching(false);
       setFetchSuccess(true)
       setTimeout(() => setFetchSuccess(false), 2000)
@@ -94,15 +132,15 @@ export default function Profile() {
               </div>
               <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
               { fetching ? (
-                    <div className="inline-block text-center py-2 px-2 border border-transparent shadow-sm rounded-md h-10 w-20 bg-indigo-600 hover:bg-indigo-700">
-                      <PulseLoader color="white" loading={fetching} size={9} /> 
-                    </div>
-                  ) : (
-                    <button type="submit" className="h-10 w-20 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                      Fetch
-                    </button>
-                  ) 
-                }
+                  <div className="inline-block text-center py-2 px-2 border border-transparent shadow-sm rounded-md h-10 w-20 bg-indigo-600 hover:bg-indigo-700">
+                    <PulseLoader color="white" loading={fetching} size={9} /> 
+                  </div>
+                ) : (
+                  <button type="submit" className="h-10 w-20 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Fetch
+                  </button>
+                ) 
+              }
               </div>
             </div>
           </form>
@@ -137,66 +175,9 @@ export default function Profile() {
                       className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
                     />
                   </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label htmlFor="member1Acct" className="block text-sm font-medium text-gray-700">Recipient 1 Main Account</label>
-                    <input
-                      type="text" 
-                      name="member1Acct" 
-                      value={member1Acct}
-                      disabled
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
-                    />
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label htmlFor="member2Acct" className="block text-sm font-medium text-gray-700">Recipient 2 Main Account</label>
-                    <input
-                      type="text" 
-                      name="member2Acct" 
-                      value={member2Acct}
-                      disabled
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
-                    />
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label htmlFor="member1Shares" className="block text-sm font-medium text-gray-700">Recipient 1 Shares</label>
-                    <input
-                      type="text" 
-                      name="member1Shares" 
-                      value={member1Shares + '%'}
-                      disabled
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
-                    />
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label htmlFor="member2Shares" className="block text-sm font-medium text-gray-700">Recipient 2 Shares</label>
-                    <input
-                      type="text" 
-                      name="member2Shares" 
-                      value={member2Shares + '%'}
-                      disabled
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
-                    />
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label htmlFor="member1WithDraw" className="block text-sm font-medium text-gray-700">Recipient 1 Withdraw</label>
-                    <input
-                      type="text" 
-                      name="member1Withdraw" 
-                      value={member1Withdraw}
-                      disabled
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
-                    />
-                  </div>
-                  <div className="col-span-6 sm:col-span-4">
-                    <label htmlFor="member2Withdraw" className="block text-sm font-medium text-gray-700">Recipient 2 Withdraw</label>
-                    <input
-                      type="text" 
-                      name="member2Withdraw" 
-                      value={member2Withdraw}
-                      disabled
-                      className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50" 
-                    />
-                  </div>
+                  { renderMemberAccts() }
+                  { renderMemberShares() }
+                  { renderMemberWithdraws() }
                 </div>
               </div>
             </div>
