@@ -11,9 +11,9 @@ export default function NotificationPanel({show, bgColor, message}) {
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
     >
-      <div className="max-w-7xl mx-auto mb-4 px-4 sm:px-6 md:px-8 ">
-        <div className={`${bgColor} shadow sm:rounded-md sm:overflow-hidden py-2 text-center`}>
-          <span className="text-md font-medium text-gray-800">
+      <div className={`${bgColor} rounded shadow-md absolute top-3 sm:top-6 right-8 sm:right-8 md:right-12 z-10 py-1 px-4 sm:px-6 md:px-8`}>
+        <div className={`sm:overflow-hidden text-center`}>
+          <span className="text-xs font-medium text-white">
             {message}
           </span>
         </div>

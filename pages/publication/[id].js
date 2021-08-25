@@ -41,15 +41,14 @@ export default function Publication() {
 
   // UI state
   const [saving, setSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState(false);
   const [embedding, setEmbedding] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [successMsg, setSuccessMsg] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+ 
   const [embedSuccess, setEmbedSuccess] = useState(false);
   const [embedError, setEmbedError] = useState(false);
-  const [publishing, setPublishing] = useState(false);
-  const [publishSuccess, setPublishSuccess] = useState(false);
-  const [publishError, setPublishError] = useState(false);
-
+  
   // Update Publication state on data fetch
   useEffect(() => {
     if (publication) {
@@ -119,17 +118,17 @@ export default function Publication() {
       const response = await api.request({ method, url, data: formData, headers: { "Content-Type": contentType } });
       const savedPublication = response.data;
       setSaving(false);
-      setSaveSuccess(true);
+      setSuccessMsg('Publication Saved!')
       if (isNew) {
         const newId = savedPublication.id;
         setId(newId);
         router.push(`/publication/${newId}`, undefined, { shallow: true });
       }
-      setTimeout(() => setSaveSuccess(false), 2000);
+      setTimeout(() => setSuccessMsg(null), 3000);
       mutate(`${PUBLICATION_PATH}/${id}`);
     } catch (err) {
-      setSaveError(true);
-      setTimeout(() => setSaveError(false), 2000);
+      setErrorMsg('Error saving Publication!')
+      setTimeout(() => setErrorMsg(null), 3000);
     }
   }
 
@@ -141,11 +140,11 @@ export default function Publication() {
       mutate(`${PUBLICATION_PATH}/${id}`);
       setEmbedding(false);
       setEmbedSuccess(true);
-      setTimeout(() => setEmbedSuccess(false), 2000);
+      setTimeout(() => setEmbedSuccess(false), 3000);
     } catch (err) {
       setEmbedding(false);
       setEmbedError(true);
-      setTimeout(() => setEmbedError(false), 2000);
+      setTimeout(() => setEmbedError(false), 3000);
     }
   }
 
@@ -156,12 +155,12 @@ export default function Publication() {
       const response = await api.request({ method: 'PUT', url: `${PUBLICATION_PATH}/publish/${id}`, data: {} });
       mutate(`${PUBLICATION_PATH}/${id}`);
       setPublishing(false);
-      setPublishSuccess(true);
-      setTimeout(() => setPublishSuccess(false), 2000);
+      setSuccessMsg('Publication Published!')
+      setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err) {
       setPublishing(false);
-      setPublishError(true);
-      setTimeout(() => setPublishError(false), 2000);
+      setErrorMsg('Error publishing Publication!')
+      setTimeout(() => setPublishError(false), 3000);
     }
   }
 
@@ -172,7 +171,10 @@ export default function Publication() {
   }
 
   return (
-    <Protected>
+    <>
+      <NotificationPanel show={!!successMsg} bgColor="bg-green-400" message={successMsg} />
+      <NotificationPanel show={!!errorMsg} bgColor="bg-red-400" message={errorMsg} />
+      <Protected>
       <Layout>
         {/*
         <QrCodeModal
@@ -196,25 +198,14 @@ export default function Publication() {
             <div className="max-w-7xl mx-auto mb-4 px-4 sm:px-6 lg:px-8">
               <h1 className="text-2xl font-semibold text-gray-900">Publication</h1>
             </div>
-            <NotificationPanel
-              show={saveSuccess || publishSuccess}
-              bgColor="bg-green-100"
-              message={saveSuccess ? "Publication Saved!" : "Publication Published!"}
-            />
-            <NotificationPanel
-              show={saveError || publishError}
-              bgColor="bg-red-100"
-              message={saveError ? "Error saving Publication!" : "Error publishing Publication!"}
-            />
+            
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <div id="new-publication-form" className="mt-5 md:mt-0 md:col-span-2">
                 <form onSubmit={onSubmit}>
                   <div className="shadow sm:rounded-md sm:overflow-hidden">
                     <div className="px-4 py-5 bg-white space-y-3 sm:p-6">
                       <div className="col-span-6 sm:col-span-4">
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                          Title
-                        </label>
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
                         <input
                           type="text"
                           name="title"
@@ -225,9 +216,7 @@ export default function Publication() {
                         />
                       </div>
                       <div className="col-span-6 sm:col-span-4">
-                        <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
-                          Slug
-                        </label>
+                        <label htmlFor="slug" className="block text-sm font-medium text-gray-700">Slug</label>
                         <input
                           type="text"
                           name="slug"
@@ -238,9 +227,7 @@ export default function Publication() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          PDF
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700">PDF</label>
                         <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                           <div className="space-y-1 text-center">
                             <svg
@@ -359,5 +346,7 @@ export default function Publication() {
         </main>
       </Layout>
     </Protected>
-  );
+    </>
+
+);
 }
