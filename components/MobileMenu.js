@@ -1,8 +1,10 @@
+import { useContext } from 'react';
 import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import { Transition } from '@headlessui/react';
 import { useAuth } from '../context/auth';
 import getIcon from '../components/Icons';
+import { MenuOpenedContext } from '../context/MenuOpenedContext';
 
 const CLASSES_TEXT_SELECTED = 'bg-gray-900 text-white group flex items-center px-2 py-2 text-base font-medium rounded-md';
 const CLASSES_TEXT_NORMAL = 'text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-base font-medium rounded-md';
@@ -22,8 +24,9 @@ function renderItems(items, pathname) {
   })
 }
 
-export default function MobileMenu({ items, menuOpened, setMenuOpened }) {
+export default function MobileMenu({ items }) {
   const { user, setUser, logout } = useAuth();
+  const { menuOpened, setMenuOpened } = useContext(MenuOpenedContext);
   const router = useRouter();
   const IconX = getIcon('x');
 
@@ -57,7 +60,7 @@ export default function MobileMenu({ items, menuOpened, setMenuOpened }) {
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <div id="off-canvas-menu" className="relative flex-1 flex flex-col max-w-xs w-full h-full  bg-gray-800">
+            <div id="off-canvas-menu" className="relative flex-1 flex flex-col max-w-xs w-full h-full bg-gray-800">
               <div className="absolute top-0 right-0 -mr-12 pt-2">
                 <button
                   onClick={() => setMenuOpened(!menuOpened)}

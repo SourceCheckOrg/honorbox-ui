@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
+import NavBar from "./NavBar";
 import DesktopMenu from "./DesktopMenu";
 import MobileMenu from "./MobileMenu";
-import OpenSideBar from "./OpenSidebar";
+import { useAuth } from '../context/auth';
 
 const menuItems = [
   /*
@@ -29,14 +30,25 @@ const menuItems = [
 ]
 
 export default function Layout(props) {
-  const [menuOpened, setMenuOpened] = useState(false);
+  const { isAuthenticated } = useAuth();
+  
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-100">
-      <DesktopMenu items={menuItems} />
-      <MobileMenu items={menuItems} menuOpened={menuOpened} setMenuOpened={setMenuOpened} />
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        <OpenSideBar menuOpened={menuOpened} setMenuOpened={setMenuOpened} />
-        {props.children}
+    <div className="pt-16 bg-gray-50 relative h-full">
+      <NavBar />
+      <div className="flex">
+        <MobileMenu items={menuItems} />
+        { isAuthenticated ? (
+          <>
+            <DesktopMenu items={menuItems} />
+            <div className="flex flex-col w-0 flex-1 md:ml-64">
+              {props.children}
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col w-0 flex-1">
+            {props.children}
+          </div>
+        )}
       </div>
     </div>
   );

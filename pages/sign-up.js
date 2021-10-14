@@ -1,53 +1,93 @@
 import { useState } from 'react';
+import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core'
+import { injected } from '../lib/connectors';
 import PulseLoader from 'react-spinners/PulseLoader';
+import Layout from '../components/AppLayout';
+import Button from '../components/Button';
 import NavBar from '../components/NavBar';
+import NotificationPanel from '../components/NotificationPanel';
 
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
 const SIGNUP_PATH = process.env.NEXT_PUBLIC_SIGNUP_PATH;
 const SIGNUP_URL = `${API_HOST}${SIGNUP_PATH}`;
+const SIGNUP_NONCE_PATH = process.env.NEXT_PUBLIC_SIGNUP_NONCE_PATH;
+const SIGNUP_NONCE_URL = `${API_HOST}${SIGNUP_NONCE_PATH}`;
 
 export default function SignUp() {
+  const { active, account, library: ethers, connector, activate, deactivate } = useWeb3React();
+
   // Form state
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
-
+ 
   // UI state
   const [loading, setLoading] = useState(false);
-  const [sucess, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [successMsg, setSuccessMsg] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
 
-  // Handle sign up
   async function signUp(evt) {
     evt.preventDefault();
-    setError(false);
-    if (password !== passwordConfirmation) {
-      setError(true);
-      setErrorMessage("Passwords don't match!");
+
+    if (!active) {
+      setErrorMsg('Please connect to Metamask before signing up!');
+      setTimeout(() => setErrorMsg(null), 3000);
       return;
     }
+
     setLoading(true);
-    const res = await fetch(SIGNUP_URL, {
-      body: JSON.stringify({ username, email, password }),
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
-    });
-    const result = await res.json();
-    setLoading(false);
-    if (result.statusCode && result.statusCode !== 200) {
-      setError(true);
-      setErrorMessage(JSON.stringify(result.data[0].messages[0].message));
-    } else {
-      setSuccess(true);
+    let nonce;
+    let signature;
+    
+    // Fetch nonce (challenge) to be included in signature
+    try {
+      const res = await fetch(SIGNUP_NONCE_URL, {
+        body: JSON.stringify({ username, email }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      });
+      const result = await res.json();
+      nonce = result.nonce;
+      setLoading(false);
+      if (!nonce) {
+        setErrorMsg(result.message);
+        setTimeout(() => setErrorMsg(null), 3000);
+        return;
+      }
+    } catch (err) {
+      setErrorMsg(err.message);
+      setTimeout(() => setErrorMsg(null), 3000);
+    }
+    
+    // Sign authentication message
+    try {
+      const signer = ethers.getSigner();
+      signature = await signer.signMessage(`Welcome to SourceCheck!\n\nSign up using ethereum account ${account} on Polygon\n\nSession ID: ${nonce}`);
+      console.log('signature', signature);
+    } catch (err) {
+      setErrorMsg(err.message);
+      setTimeout(() => setErrorMsg(null), 3000);
+      return;
+    }
+
+    // Trigger account creation on backend
+    try {
+      const res = await fetch(SIGNUP_URL, {
+        body: JSON.stringify({ username, email, eth_addr: account, signature }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      });
+      setSuccessMsg("Success!");
+    } catch (err) {
+      setErrorMsg(err.message);
+      setTimeout(() => setErrorMsg(null), 3000);
     }
   }
 
-  if (sucess) {
+  if (successMsg) {
     return (
       <>
-        <NavBar />
+      <Layout>
+         <main className="flex-1 overflow-y-auto focus:outline-none" tabIndex="0">
         <div className="max-w-7xl px-5 mt-5 mx-auto">
           <div className="mt-10 sm:mt-0">
             <div className="md:grid md:grid-cols-3 md:gap-6">
@@ -60,33 +100,24 @@ export default function SignUp() {
             </div>
           </div>
         </div>
-      </>
+        </main>
+      </Layout>
+      </> 
     );
   }
 
   return (
-    <>
-      <NavBar />
+    <Layout>
+      <NotificationPanel show={!!errorMsg} bgColor="bg-red-400" message={errorMsg} />
       <div className="max-w-7xl px-5 mt-5 mx-auto">
         <div className="mt-10 sm:mt-0">
           <div className="md:grid md:grid-cols-3 md:gap-6">
-          {
-              error ? (
-                <div className="md:col-span-1 px-3">
-                  <div className="px-4 sm:px-0">
-                    <h3 className="text-lg font-medium leading-6 text-gray-900">Sign Up</h3>
-                    <p className="mt-1 text-sm text-gray-600">ERROR! There was a problem during your sign up: {errorMessage}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="md:col-span-1 px-3">
-                  <div className="px-4 sm:px-0">
-                    <h3 className="text-lg font-medium leading-6 text-gray-900">Sign Up</h3>
-                    <p className="mt-1 text-sm text-gray-600">NOTE: We are going to send you an email with instructions on how to continue</p>
-                  </div>
-                </div>
-              )
-            }
+            <div className="md:col-span-1 px-3">
+              <div className="px-4 sm:px-0">
+                <h3 className="text-lg font-medium leading-6 text-gray-900">Sign Up</h3>
+                <p className="mt-1 text-sm text-gray-600">NOTE: We are going to send you an email with instructions on how to continue</p>
+              </div>
+            </div>
             <div className="mt-5 md:mt-0 md:col-span-2">
               <form onSubmit={signUp}>
                 <div className="shadow overflow-hidden sm:rounded-md">
@@ -115,30 +146,6 @@ export default function SignUp() {
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                       />
                     </div>
-                    <div className="col-span-6 sm:col-span-4">
-                      <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                      <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      />
-                    </div>
-                    <div className="col-span-6 sm:col-span-4">
-                      <label htmlFor="passwordConfirmation" className="block text-sm font-medium text-gray-700">Confirm password</label>
-                      <input
-                        id="passwordConfirmation"
-                        type="password"
-                        name="passwordConfirmation"
-                        value={passwordConfirmation}
-                        onChange={(e) => setPasswordConfirmation(e.target.value)}
-                        required
-                        className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                      />
-                    </div>
                   </div>
                   <div className="px-4 py-3 bg-gray-50 text-center sm:px-6">
                     {loading ? (
@@ -150,9 +157,7 @@ export default function SignUp() {
                         />
                       </div>
                     ) : (
-                      <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Sign-Up
-                      </button>
+                      <Button type="submit" label="Sign Up" color="indigo" submit disabled={!username || !email}/>     
                     )}
                   </div>
                 </div>
@@ -161,6 +166,6 @@ export default function SignUp() {
           </div>
         </div>
       </div>
-    </>
+    </Layout>
   );
 }

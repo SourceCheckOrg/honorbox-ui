@@ -260,13 +260,13 @@ export default function RevenueShare() {
       <NotificationPanel show={!!errorMsg} bgColor="bg-red-400" message={errorMsg} />
       <Protected>
         <Layout>
-          <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none" tabIndex="0">
+          <main className="flex-1 overflow-y-auto focus:outline-none" tabIndex="0">
             <div className="py-6">
-              <div className="max-w-7xl mx-auto mb-4 px-4 sm:px-6 md:px-8">
+              <div className="max-w-4xl mx-auto mb-4 px-4 sm:px-6 md:px-8">
                 <h1 className="text-2xl font-semibold text-gray-900">Revenue Share</h1>
               </div>
 
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
                 <div id="new-publication-form" className="mt-5 md:mt-0 md:col-span-2">
                   <form onSubmit={onSubmit}>
                     <div className="shadow sm:rounded-md sm:overflow-hidden">
@@ -283,7 +283,7 @@ export default function RevenueShare() {
                           />
                         </div>
                         <div className="col-span-6 sm:col-span-4">
-                          <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
+                          <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Company statement (that is embedded in the PDFs)</label>
                           <textarea 
                             name="notes"
                             value={notes}

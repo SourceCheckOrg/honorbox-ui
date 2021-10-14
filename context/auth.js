@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 import Router  from 'next/router';
 import api from '../lib/api';
 
-const AuthContext = createContext({});
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

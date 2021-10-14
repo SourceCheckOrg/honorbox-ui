@@ -17,7 +17,7 @@ const Protected = (props) => {
 
   // Redirect user to sign in page
   if (!isAuthenticated) {
-    router.push(`/sign-in`);
+    router.push('/');
   }
 
   return props.children;
