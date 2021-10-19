@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import slugIt from "slug";
 import useSWR, { mutate } from "swr";
 import PulseLoader from "react-spinners/PulseLoader";
 import { useAuth } from "../../context/auth";
@@ -8,12 +9,10 @@ import Protected from "../../components/Protected";
 import Layout from "../../components/AppLayout";
 import Button from "../../components/Button";
 import NotificationPanel from "../../components/NotificationPanel";
-import QrCodeModal from "../../components/QrCodeModal";
-import SelectField from "../../components/SelectField";
+import QRCode from 'qrcode.react';
 
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST;
 const PUBLICATION_PATH = process.env.NEXT_PUBLIC_PUBLICATION_PATH;
-const ROYALTY_STRUCTURE_PATH = process.env.NEXT_PUBLIC_ROYALTY_STRUCTURE_PATH;
 
 export default function Publication() {
   // Data fetching
@@ -21,8 +20,7 @@ export default function Publication() {
   const router = useRouter();
   const pathId = router.query.id;
   const shouldFetchPublication = isReady && pathId && pathId !== "new";
-  const { data: royaltyStructures, error: rsError } = useSWR(isReady ? ROYALTY_STRUCTURE_PATH : null);
-  const { data: publication, error: pubError } = useSWR(shouldFetchPublication ? `${PUBLICATION_PATH}/${pathId}` : null);
+  const { data: publication, error: _pubError } = useSWR(shouldFetchPublication ? `${PUBLICATION_PATH}/${pathId}` : null);
 
   // Publication state
   const [id, setId] = useState();
@@ -30,12 +28,14 @@ export default function Publication() {
   const [pdfRaw, setPdfRaw] = useState(null);
   const [pdfRawData, setPdfRawData] = useState(null);
   const [pdf_raw_hash, setPdfRawHash] = useState(null);
-  const [title, setTitle] = useState("");
-  const [slug, setSlug] = useState("");
-  const [royalty_structure, setRoyaltyStructure] = useState(null);
+  const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [ethProfileAddr, setEthProfileAddr] = useState('');
   const [downloadUrl, setDownloadUrl] = useState(null);
 
   // UI state
+  const [generateSlug, setGenerateSlug] = useState(true);
+  const [pdfChanged, setPdfChanged] = useState(false);
   const [saving, setSaving] = useState(false);
   const [embedding, setEmbedding] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
@@ -48,13 +48,19 @@ export default function Publication() {
       setUuid(publication.uuid);
       setTitle(publication.title);
       setSlug(publication.slug);
-      setRoyaltyStructure(publication.royalty_structure ? publication.royalty_structure.id : null);
+      if (slugIt(publication.title) !== publication.slug) {
+        setGenerateSlug(false);
+      }
       setPdfRawHash(publication.pdf_raw_hash);
       if (publication.pdf_raw) {
         setPdfRawData({
           name: publication.pdf_raw.name,
           size: publication.pdf_raw.size,
         });
+        setPdfChanged(false);
+      }
+      if (publication.owner.eth_profile_addr) {
+        setEthProfileAddr(publication.owner.eth_profile_addr);
       }
       if (publication.pdf_embedded) {
         setDownloadUrl(publication.pdf_embedded.url)
@@ -64,14 +70,34 @@ export default function Publication() {
     }
   }, [publication]);
 
+  function onChangeTitle(newTitle) {
+    if (generateSlug) {
+      setSlug(slugIt(`${slugIt(title)}.pdf`));
+    }
+    setTitle(newTitle);
+  }
+
+  function onGenerateSlugChange(generate) {
+    if (generate) {
+      setSlug(`${slugIt(title)}.pdf`)
+    }
+    setGenerateSlug(generate);
+  }
+
   // Handle file upload
   function onFileUpload(evt) {
+    if (!pdfRaw) {
+      setPdfChanged(true);
+    }
     const file = evt.target.files[0];
+    console.log('file', file)
+    setDownloadUrl(null);
     setPdfRaw(file);
     setPdfRawData({
       name: file.name,
       size: file.size, // TODO format in kB or mB
     });
+    setDownloadUrl(null);
   }
 
   // Handle file remove
@@ -80,6 +106,7 @@ export default function Publication() {
     setPdfRaw(null);
     setPdfRawData(null);
     setPdfRawHash(null);
+    setDownloadUrl(null);
   }
 
   // Handle form submission
@@ -90,7 +117,7 @@ export default function Publication() {
     const isNew = !id;
     const method = isNew ? "POST" : "PUT";
     const url = isNew ? PUBLICATION_PATH : `${PUBLICATION_PATH}/${id}`;
-    const data = { id, title, slug, royalty_structure, pdf_raw_hash };
+    const data = { id, title, slug, pdf_raw_hash };
 
     // Request data and headers
     const hasFile = pdfRaw && pdfRawData;
@@ -140,35 +167,12 @@ export default function Publication() {
     }
   }
 
-  function hasAccount(royaltyStructureId) {
-    if (!royaltyStructureId) return false;
-    if (!royaltyStructures) return false;
-    return !!royaltyStructures.filter(rs => rs.id == royaltyStructureId)[0].account;
-  }
-
   return (
     <>
       <NotificationPanel show={!!successMsg} bgColor="bg-green-400" message={successMsg} />
       <NotificationPanel show={!!errorMsg} bgColor="bg-red-400" message={errorMsg} />
       <Protected>
       <Layout>
-        {/*
-        <QrCodeModal
-          show={publisherCredentialOffer}
-          title="Get Publisher Credential"
-          message="Please scan the QR code with your Credible Wallet to accept the Publisher Credential"
-          url={`${API_HOST}${PUBLISHER_VC_PATH}?uuid=${uuid}`}
-          onCancel={onPublisherCredOfferCancel}
-        />
-        -->
-        <QrCodeModal
-          show={publisherPresentationRequest}
-          title="Share Publisher Credential"
-          message="Please scan the QR code with your Credible Wallet to share the Publisher Credential"
-          url={`${API_HOST}${PUBLISHER_VP_PATH}?uuid=${uuid}`}
-          onCancel={onPublisherPresReqCancel}
-        />
-        */}
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none" tabIndex="0">
           <div className="py-6">
             <div className="max-w-7xl mx-auto mb-4 px-4 sm:px-6 lg:px-8">
@@ -178,27 +182,30 @@ export default function Publication() {
               <div id="new-publication-form" className="mt-5 md:mt-0 md:col-span-2">
                 <form onSubmit={onSubmit}>
                   <div className="shadow sm:rounded-md sm:overflow-hidden">
-                    <div className="px-4 py-5 bg-white space-y-3 sm:p-6">
+                    <div className="px-6 pt-6 pb-3 bg-white space-y-3">
                       <div className="col-span-6 sm:col-span-4">
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
                         <input
                           type="text"
                           name="title"
                           value={title}
-                          onChange={(evt) => setTitle(evt.target.value)}
+                          onChange={(evt) => onChangeTitle(evt.target.value)}
                           required
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                         />
                       </div>
                       <div className="col-span-6 sm:col-span-4">
                         <label htmlFor="slug" className="block text-sm font-medium text-gray-700">Slug</label>
+                        <input type="checkbox" checked={generateSlug} onChange={() => onGenerateSlugChange(!generateSlug)}></input>
+                        <label className="ml-3 text-xs inline-block" htmlFor="embedded">Auto generate </label>
                         <input
                           type="text"
                           name="slug"
                           value={slug}
                           onChange={(evt) => setSlug(evt.target.value)}
+                          disabled={generateSlug}
                           required
-                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          className="mt-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                         />
                       </div>
                       <div>
@@ -261,57 +268,51 @@ export default function Publication() {
                       </div>
                       <div className="col-span-3 sm:col-span-3">
                         <label htmlFor="royalty-structure" className="block text-sm font-medium text-gray-700">
-                          Revenue Share
+                          QR Code
                         </label>
-                        <div className="flex items-center">
-                          <div className="flex-grow mr-5">
-                            <SelectField
-                              options={royaltyStructures}
-                              valueField="id"
-                              labelField="name"
-                              selected={royalty_structure ? royalty_structure : null}
-                              onChange={(value) => setRoyaltyStructure(value)}
+                        <div className="pt-4 text-center">
+                          { ethProfileAddr ? (
+                            <QRCode
+                              className="inline"
+                              value={ethProfileAddr}
+                              size={200}
+                              level={"H"}
+                              includeMargin={false}
                             />
-                          </div>
-                          <div className="mr-5">
-                            <label className="inline-block mr-3" htmlFor="embedded">QR Code Embedded </label>
-                            <input type="checkbox" checked={downloadUrl} disabled></input>
-                          </div>
-                          <div className="flex-none">
-                          { embedding ? (
-                              <div className="inline-block text-center py-2 px-2 border border-transparent shadow-sm rounded-md h-10 w-20 bg-indigo-600 hover:bg-indigo-700">
-                                <PulseLoader  color="white" loading={embedding} size={9}/>
-                              </div>
-                            ) : (
-                              <Button label="Embed" color="indigo" disabled={downloadUrl || !hasAccount(royalty_structure) || !pdf_raw_hash} onClick={onEmbed} />
-                            )
-                          }
-                          </div>
+                          ): (
+                            <div className="p-5 text-red-500 rounded-md border-2 border-gray-300 border-dashed text-gray-700">
+                              <p>Please verify your profile and deploy it to the blockchain!</p>
+                              <p>After doing that, you will be able to embed the QR code into your publication</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div>
                       </div>
                       { downloadUrl ? (
-                          <div>
-                            <label className="inline-block mr-2 text-sm font-medium text-gray-700">Download URL: </label>
-                            <a className="text-sm font-medium text-indigo-700" target="_blank" href={`${API_HOST}${downloadUrl}`}>{`${API_HOST}${downloadUrl}/${slug}`}</a>
-                          </div>
-                        ) : (
-                          ''
-                        )
-                      }
+                        <div>
+                          <label className="inline-block mr-2 text-sm font-medium text-gray-700">Download URL: </label>
+                          <a className="text-sm font-medium text-indigo-700" target="_blank" href={`${API_HOST}${downloadUrl}`}>{`${API_HOST}${downloadUrl}/${slug}`}</a>
+                        </div>
+                      ) : (
+                        ''
+                      )}
                     </div>
-                    <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
-                      {saving ? (
-                          <div className="inline-block text-center py-2 px-2 border border-transparent shadow-sm rounded-md h-10 w-20 bg-indigo-600 hover:bg-indigo-700">
-                            <PulseLoader color="white" loading={saving} size={9} />
-                          </div>
-                        ) : (
-                          <button type="submit" className="h-10 w-20 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Save
-                          </button>
-                        )
-                      }
+                    <div className="px-4 py-3 bg-gray-50 text-center sm:px-6">
+                      { embedding ? (
+                        <div className="h-10 w-20 mr-2 inline-block text-center py-2 px-2 border border-transparent shadow-sm rounded-md  bg-indigo-600 hover:bg-indigo-700">
+                          <PulseLoader  color="white" loading={embedding} size={9}/>
+                        </div>
+                      ) : (
+                      <Button label="Embed QR Code & Publish" hidden={!ethProfileAddr || !pdf_raw_hash || downloadUrl || pdfChanged} color="indigo" disabled={downloadUrl || !pdf_raw_hash} onClick={onEmbed} />
+                      )}
+                      { saving ? (
+                        <div className="h-10 w-20 inline-block text-center py-2 px-4 border border-transparent shadow-sm rounded-md  bg-indigo-600 hover:bg-indigo-700">
+                          <PulseLoader color="white" loading={saving} size={9} />
+                        </div>
+                      ) : (
+                        <Button label="Save" color="indigo" type="submit" />
+                      )}
                     </div>
                   </div>
                 </form>

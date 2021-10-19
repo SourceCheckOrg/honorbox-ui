@@ -100,7 +100,8 @@ export default function NavBarButtons() {
           setErrorMsg('User is not registered! Redirecting to Sign Up page ...');
           setTimeout(() => {
             setErrorMsg('');
-            router.push('/sign-up')
+            setLoading(false);
+            window.open('https://profile.sourcecheck.org/sign-up', '_blank').focus();
           }, 3000);
           return;
         }
@@ -185,11 +186,9 @@ export default function NavBarButtons() {
                       />
                     </div>
                   )}
-                  <Link href="/sign-up">
-                    <button type="button" className="relative inline-flex items-center h-9 px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500"> 
-                      <span>Sign Up</span>
-                    </button>
-                  </Link>
+                  <button onClick={() => window.open('https://profile.sourcecheck.org/sign-up', '_blank').focus()} type="button" className="relative inline-flex items-center h-9 px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500"> 
+                    <span>Sign Up</span>
+                  </button>
                 </>
               ) : (
                 <></>

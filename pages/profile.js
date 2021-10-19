@@ -1,19 +1,31 @@
 import { useEffect, useState } from 'react';
+import { useWeb3React } from '@web3-react/core'
+import { ethers } from "ethers";
 import Link from 'next/link';
+import slugIt from "slug";
 import useSWR from 'swr'
 import PulseLoader from 'react-spinners/PulseLoader';
 import { useAuth } from '../context/auth';
-import Protected from '../components/Protected';
 import api from '../lib/api';
-import Layout from '../components/AppLayout';
-import NotificationPanel from '../components/NotificationPanel';
+import { injected } from '../lib/connectors';
 import JsonModal from '../components/JsonModal';
+import Layout from '../components/AppLayout';
+import LoaderButton from "../components/LoaderButton";
+import NotificationPanel from '../components/NotificationPanel';
+import Protected from '../components/Protected';
+import SC_PROFILE_FACTORY_ABI from '../contracts/SourceCheckProfileFactory';
 
-const PUBLISHER_PATH=process.env.NEXT_PUBLIC_PUBLISHER_PATH;
-const TWITTER_PATH=process.env.NEXT_PUBLIC_TWITTER_PATH
-const DOMAIN_PATH=process.env.NEXT_PUBLIC_DOMAIN_PATH;
+const PUBLISHER_PATH = process.env.NEXT_PUBLIC_PUBLISHER_PATH;
+const TWITTER_PATH = process.env.NEXT_PUBLIC_TWITTER_PATH
+const DOMAIN_PATH = process.env.NEXT_PUBLIC_DOMAIN_PATH;
+const UPDATE_USER_PATH = process.env.NEXT_PUBLIC_UPDATE_USER_PATH;
+
+const SC_PROFILE_FACTORY_ADDR = process.env.NEXT_PUBLIC_SC_PROFILE_FACTORY_ADDR;
+const SERVICE_ADDR = process.env.NEXT_PUBLIC_SERVICE_ADDR;
+const SERVICE_FEE_PERC = process.env.NEXT_PUBLIC_SERVICE_FEE_PERC;
 
 export default function Profile() {
+  const { account, library: provider, activate } = useWeb3React();
 
   // Data fetching
   let { isReady, user } = useAuth();
@@ -28,21 +40,21 @@ export default function Profile() {
   const [slug, setSlug] = useState('');
 
   // UI state
+  const [generateSlug, setGenerateSlug] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState(false);
+  const [deploying, setDeploying] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [showingTwitter, setShowingTwitter] = useState(false);
   const [showingDomain, setShowingDomain] = useState(false);
 
-  /*
-  if (twitter && twitter.credential) {
-    console.log('twitter', twitter.credential)
-  }
+  useEffect(() => {
+    activate(injected);
+  },[])
 
-  if (domain ) {
-    console.log('domain', domain)
+  function canDeploy() {
+    return !user.eth_profile_addr && (twitter || domain)
   }
-  */
 
   function getTwitterCredential() {
     if (!(twitter && twitter.credential)) {
@@ -64,8 +76,25 @@ export default function Profile() {
       setId(publisher.id);
       setName(publisher.name);
       setSlug(publisher.slug);
+      if (slugIt(publisher.name) !== publisher.slug) {
+        setGenerateSlug(false);
+      }
     }
   }, [publisher])
+
+  function onGenerateSlugChange(generate) {
+    if (generate) {
+      setSlug(slugIt(name))
+    }
+    setGenerateSlug(generate);
+  }
+
+  function onNameChange(newName) {
+    if (generateSlug) {
+      setSlug(slugIt(newName));
+    }
+    setName(newName);
+  }
  
   async function onSubmit (e) {
     e.preventDefault()
@@ -77,15 +106,15 @@ export default function Profile() {
     try {
       const response = await api.request({ method, url, data });
       const savedPublisher = response.data;
-      setSaving(false);
-      setSaveSuccess(true)
       if (isNew) {
         setId(savedPublisher.id);
       }
-      setTimeout(() => setSaveSuccess(false), 2000)
+      setSaving(false);
+      setSuccessMsg('Profile saved successfully!');
+      setTimeout(() => setSuccessMsg(''), 2000)
     } catch (err) {
-      setSaveError(true);
-      setTimeout(() => setSaveError(false), 2000)
+      setErrorMsg(`Error saving profile: ${err.message}`);
+      setTimeout(() => setErrorMsg(''), 2000)
     }
   }
 
@@ -95,6 +124,50 @@ export default function Profile() {
 
   function toggleDomain() {
     setShowingDomain(!showingDomain);
+  }
+
+  async function deployProfile() {
+    const profileUrl = `https://profile.sourcecheck.org/${user.eth_addr}`;
+    let profileAddr;
+    
+    // Deploy profile smart contract
+    try {
+      setDeploying(true);
+
+      // Get a reference to SourceCheck Profile Factory contract
+      const signer = await provider.getSigner();
+      const factoryContract = new ethers.Contract(SC_PROFILE_FACTORY_ADDR, SC_PROFILE_FACTORY_ABI, signer);
+
+      // Send transaction 
+      const tx = await factoryContract.createNew(user.eth_addr, SERVICE_ADDR, SERVICE_FEE_PERC, profileUrl);
+
+      // Fetch receipt
+      const receipt = await tx.wait();
+
+      // Get profile address from receipt
+      profileAddr = receipt.events[0].args[1];
+
+    } catch (err) {
+      setDeploying(false);
+      setErrorMsg(`Error deploying profile: ${err.message}`);
+      setTimeout(() => setErrorMsg(''), 5000)
+    }
+
+    // Update user profile with ethereum profile address
+    try {
+      const method = 'POST';
+      const url = UPDATE_USER_PATH;
+      const data = { ethProfileAddr: profileAddr };
+      await api.request({ method, url, data });
+      user.eth_profile_addr = profileAddr;
+      setDeploying(false);
+      setSuccessMsg('Profile deployed to blockchain!');
+      setTimeout(() => setSuccessMsg(''), 2000)
+    } catch (err) {
+      setDeploying(false);
+      setErrorMsg(`Error updating profile: ${err.message}`);
+      setTimeout(() => setErrorMsg(''), 2000)
+    }
   }
 
   return (
@@ -123,8 +196,8 @@ export default function Profile() {
           />
         </div>
       </JsonModal>
-      <NotificationPanel show={saveSuccess} bgColor="bg-green-400" message="Publisher data updated!" />
-      <NotificationPanel show={saveError} bgColor="bg-red-400" message="Error updating Publisher data!" />
+      <NotificationPanel show={!!successMsg} message={successMsg} bgColor="bg-green-400" />
+      <NotificationPanel show={!!errorMsg} message={errorMsg} bgColor="bg-red-400" />
       <Protected>
         <Layout>
           <main className="flex-1 overflow-y-auto focus:outline-none py-6" tabIndex="0">
@@ -159,19 +232,22 @@ export default function Profile() {
                         type="text" 
                         name="name" 
                         value={name}
-                        onChange={evt => setName(evt.target.value)}
+                        onChange={evt => onNameChange(evt.target.value)}
                         required
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-md border-gray-300 rounded-md" 
                       />
                     </div>
                     <div className="col-span-6 sm:col-span-4">
                       <label htmlFor="slug" className="block text-sm font-medium text-gray-700"> URL-friendly publisher name (slug)</label>
+                      <input type="checkbox" checked={generateSlug} onChange={() => onGenerateSlugChange(!generateSlug)}></input>
+                      <label className="ml-3 text-xs inline-block" htmlFor="embedded">Auto generate </label>
                       <input 
                         type="text" 
                         name="slug" 
                         value={slug}
                         onChange={evt => setSlug(evt.target.value)}
                         required
+                        disabled={generateSlug}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-md border-gray-300 rounded-md" 
                       />
                     </div>
@@ -189,10 +265,21 @@ export default function Profile() {
                   </div>
                 </form>
               </div>
-              
               <div className="shadow sm:rounded-md sm:overflow-hidden mt-6">
                 <div className="px-4 py-5 bg-white space-y-5 sm:p-6">
-                  <h1 className="text-2xl font-semibold text-gray-900">Credentials</h1>
+                  <h1 className="text-2xl font-semibold text-gray-900">Verifiable Credentials</h1>
+                  <div className={`${user.eth_profile_addr ? '' : 'hidden'} col-span-6 sm:col-span-4`}>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Verified Profile Contract Address</label>
+                    <input 
+                      type="text" 
+                      name="profileAddr" 
+                      value={user.eth_profile_addr}
+                      onChange={evt => setName(evt.target.value)}
+                      required
+                      disabled
+                      className="mt-1 text-gray-500 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-md border-gray-300 rounded-md" 
+                    />
+                  </div>
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

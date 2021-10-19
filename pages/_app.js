@@ -1,13 +1,13 @@
 import '../styles/global.css'
-import { fetcher } from '../lib/api';
 import { SWRConfig } from 'swr';
-import { AuthProvider } from '../context/auth';
-import { Web3Provider } from "@ethersproject/providers";
+import { ethers } from "ethers";
 import { Web3ReactProvider } from '@web3-react/core'
+import { fetcher } from '../lib/api';
+import { AuthProvider } from '../context/auth';
 import MenuOpenedContextProvider from '../context/MenuOpenedContext';
 
-function getLibrary(provider) {
-  return new Web3Provider(provider);
+function getLibrary() {
+  return new ethers.providers.Web3Provider(window.ethereum); 
 }
 
 function MyApp({ Component, pageProps }) {

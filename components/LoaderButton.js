@@ -1,6 +1,6 @@
 import PulseLoader from 'react-spinners/PulseLoader';
 
-export default function LoaderButton({ color, loading, hidden = false }) {
+export default function LoaderButton({ color, loading = true, hidden = false }) {
   const bg = `bg-${color}-600`;
   const hoverBg = `hover:bg-${color}-700`;
   return (

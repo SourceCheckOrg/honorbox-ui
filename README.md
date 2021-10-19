@@ -19,15 +19,6 @@ to install Node.js in Linux and MacOS environments.
 
 The code was created using `v14.15.3`.
 
-### SSI tooling
-
-The WMS SSI project depends on SSI components developed by [Spruce
-Systems](https://spruceid.com). See their [Developer
-Portal](https://spruceid.dev/docs/) for more information.
-
-The frontend application (Web UI) requires Spruce's Credible wallet for the sign
-up process as well as for signing in. Any standards-conformant SSI wallet should
-be usable in its place with a little effort.
 
 ### Installing HonorBox UI code
 

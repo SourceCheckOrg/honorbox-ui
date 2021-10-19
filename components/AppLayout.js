@@ -17,11 +17,13 @@ const menuItems = [
     label: 'Profile',
     href: '/profile'
   },
+  /*
   {
     icon: 'currencyDollar',
     label: 'Revenue Shares',
     href: '/revenue-shares'
   },
+  */
   {
     icon: 'bookOpen',
     label: 'Publications',
@@ -33,7 +35,7 @@ export default function Layout(props) {
   const { isAuthenticated } = useAuth();
   
   return (
-    <div className="pt-16 bg-gray-50 relative h-full">
+    <div className="pt-16 bg-gray-50 relative h-full min-h-screen">
       <NavBar />
       <div className="flex">
         <MobileMenu items={menuItems} />
