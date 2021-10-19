@@ -16,7 +16,7 @@ const PUBLICATION_PATH = process.env.NEXT_PUBLIC_PUBLICATION_PATH;
 
 export default function Publication() {
   // Data fetching
-  const { isReady } = useAuth();
+  const { isReady, user } = useAuth();
   const router = useRouter();
   const pathId = router.query.id;
   const shouldFetchPublication = isReady && pathId && pathId !== "new";
@@ -30,7 +30,6 @@ export default function Publication() {
   const [pdf_raw_hash, setPdfRawHash] = useState(null);
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
-  const [ethProfileAddr, setEthProfileAddr] = useState('');
   const [downloadUrl, setDownloadUrl] = useState(null);
 
   // UI state
@@ -59,9 +58,6 @@ export default function Publication() {
         });
         setPdfChanged(false);
       }
-      if (publication.owner.eth_profile_addr) {
-        setEthProfileAddr(publication.owner.eth_profile_addr);
-      }
       if (publication.pdf_embedded) {
         setDownloadUrl(publication.pdf_embedded.url)
       } else {
@@ -72,7 +68,7 @@ export default function Publication() {
 
   function onChangeTitle(newTitle) {
     if (generateSlug) {
-      setSlug(slugIt(`${slugIt(title)}.pdf`));
+      setSlug(`${slugIt(newTitle)}.pdf`);
     }
     setTitle(newTitle);
   }
@@ -90,7 +86,6 @@ export default function Publication() {
       setPdfChanged(true);
     }
     const file = evt.target.files[0];
-    console.log('file', file)
     setDownloadUrl(null);
     setPdfRaw(file);
     setPdfRawData({
@@ -271,16 +266,16 @@ export default function Publication() {
                           QR Code
                         </label>
                         <div className="pt-4 text-center">
-                          { ethProfileAddr ? (
+                          { user && user.eth_profile_addr ? (
                             <QRCode
                               className="inline"
-                              value={ethProfileAddr}
+                              value={user.eth_profile_addr}
                               size={200}
                               level={"H"}
                               includeMargin={false}
                             />
                           ): (
-                            <div className="p-5 text-red-500 rounded-md border-2 border-gray-300 border-dashed text-gray-700">
+                            <div className="p-5 text-red-500 rounded-md border-2 border-gray-300 border-dashed">
                               <p>Please verify your profile and deploy it to the blockchain!</p>
                               <p>After doing that, you will be able to embed the QR code into your publication</p>
                             </div>
@@ -304,7 +299,7 @@ export default function Publication() {
                           <PulseLoader  color="white" loading={embedding} size={9}/>
                         </div>
                       ) : (
-                      <Button label="Embed QR Code & Publish" hidden={!ethProfileAddr || !pdf_raw_hash || downloadUrl || pdfChanged} color="indigo" disabled={downloadUrl || !pdf_raw_hash} onClick={onEmbed} />
+                      <Button label="Embed QR Code & Publish" hidden={(user && !user.eth_profile_addr) || !pdf_raw_hash || downloadUrl || pdfChanged} color="indigo" disabled={downloadUrl || !pdf_raw_hash} onClick={onEmbed} />
                       )}
                       { saving ? (
                         <div className="h-10 w-20 inline-block text-center py-2 px-4 border border-transparent shadow-sm rounded-md  bg-indigo-600 hover:bg-indigo-700">
