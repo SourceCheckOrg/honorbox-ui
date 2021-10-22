@@ -12,10 +12,6 @@ const CLASSES_MOBILE_TEXT_SELECTED = 'bg-gray-900 block text-white px-3 py-2 rou
 const CLASSES_MOBILE_TEXT_NORMAL = 'text-gray-300 block hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium';
 
 const menuItems = [
-  {
-    label: 'About',
-    href: '/about'
-  }
 ]
 
 function renderMenuItems(pathname, isMobile) {

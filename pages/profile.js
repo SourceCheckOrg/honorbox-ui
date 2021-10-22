@@ -313,9 +313,9 @@ export default function Profile() {
                               <span className="inline-block px-2 py-1 bg-red-100 text-sm text-red-500 rounded-md">Incomplete</span>
                             </td>
                             <td className="pr-2 py-4 whitespace-nowrap text-right">
-                              <Link href="/twitter-verification">
+                              <a href="https://profile.sourcecheck.org/twitter-verification">
                                 <span className="text-indigo-500 hover:text-indigo-600 font-medium cursor-pointer">Verify</span>
-                              </Link>
+                              </a>
                             </td>
                           </>
                         )}
@@ -344,10 +344,10 @@ export default function Profile() {
                               <span className="inline-block px-2 py-1 bg-red-100 text-sm text-red-500 rounded-md">Incomplete</span>
                             </td>
                             <td className="pr-2 py-4 whitespace-nowrap text-right">
-                              <Link href="/domain-verification">
+                              <a href="https://profile.sourcecheck.org/domain-verification">
                                 <span className="text-indigo-500 hover:text-indigo-600 font-medium cursor-pointer">Verify</span>
-                              </Link>
-                             </td>
+                              </a>
+                            </td>
                           </>
                         )}
                       </tr>
