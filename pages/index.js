@@ -47,8 +47,8 @@ export default function Home() {
           <div className="flex flex-row space-x-3 my-3">
             <div>
               <span>
-                Ethereum address for donations:<br/>
-                Polygon address for donations: <span className="font-bold">0x639872CbfB6c00B2c13e1BBC81147594b1c3c79e</span>
+                Polygon address for donations:<br/> 
+                <span className="font-bold">0x639872CbfB6c00B2c13e1BBC81147594b1c3c79e</span>
               </span>
             </div>
           </div>
